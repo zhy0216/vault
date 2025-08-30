@@ -1,10 +1,9 @@
-import { Settings } from 'lucide-react';
 import type React from 'react';
 import { useState } from 'react';
 import { Layout } from '@/components/layout';
 import { NotesManager } from '@/components/notes';
 import { PasswordManager } from '@/components/passwords';
-import { Card, CardContent } from '@/components/ui/card';
+import { SettingsPage } from '@/components/settings';
 import { useAuth } from '@/contexts/AuthContext';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 
@@ -32,15 +31,7 @@ export const Dashboard: React.FC = () => {
       case 'notes':
         return <NotesManager />;
       case 'settings':
-        return (
-          <Card>
-            <CardContent className="p-8 text-center">
-              <Settings className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-              <h3 className="mb-2 font-semibold text-lg">Settings</h3>
-              <p className="text-muted-foreground">Coming soon...</p>
-            </CardContent>
-          </Card>
-        );
+        return <SettingsPage />;
       default:
         return <PasswordManager />;
     }
