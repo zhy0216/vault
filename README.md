@@ -1,6 +1,7 @@
 # Vault Password Manager
 (under development)
-A secure, **offline** password manager built with Tauri, React, and TypeScript. Your passwords and notes are encrypted and stored locally on your device - completely offline, never in the cloud.
+
+A **offline** password manager built with Tauri, React, and TypeScript. Your passwords and notes are encrypted and stored locally on your device - completely offline, never in the cloud.
 
 ## Features
 
