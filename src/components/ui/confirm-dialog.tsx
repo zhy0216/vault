@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -10,7 +10,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 
-interface ConfirmDialogProps {
+type ConfirmDialogProps = {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
@@ -19,7 +19,7 @@ interface ConfirmDialogProps {
   confirmText?: string;
   cancelText?: string;
   variant?: 'default' | 'destructive';
-}
+};
 
 export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   isOpen,
@@ -37,7 +37,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   };
 
   return (
-    <AlertDialog open={isOpen} onOpenChange={onClose}>
+    <AlertDialog onOpenChange={onClose} open={isOpen}>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>{title}</AlertDialogTitle>
@@ -46,8 +46,12 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
         <AlertDialogFooter>
           <AlertDialogCancel onClick={onClose}>{cancelText}</AlertDialogCancel>
           <AlertDialogAction
+            className={
+              variant === 'destructive'
+                ? 'bg-destructive text-destructive-foreground hover:bg-destructive/90'
+                : ''
+            }
             onClick={handleConfirm}
-            className={variant === 'destructive' ? 'bg-destructive text-destructive-foreground hover:bg-destructive/90' : ''}
           >
             {confirmText}
           </AlertDialogAction>

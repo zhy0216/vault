@@ -1,11 +1,11 @@
-import React from 'react';
+import type React from 'react';
 import { cn } from '@/lib/utils';
 
-interface LoadingSpinnerProps {
+type LoadingSpinnerProps = {
   size?: 'sm' | 'md' | 'lg';
   className?: string;
   text?: string;
-}
+};
 
 export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   size = 'md',
@@ -27,7 +27,7 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
         )}
       />
       {text && (
-        <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">{text}</p>
+        <p className="mt-2 text-gray-600 text-sm dark:text-gray-400">{text}</p>
       )}
     </div>
   );

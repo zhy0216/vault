@@ -1,4 +1,4 @@
-export interface PasswordEntry {
+export type PasswordEntry = {
   id?: number;
   website: string;
   username: string;
@@ -6,38 +6,38 @@ export interface PasswordEntry {
   notes?: string;
   created_at?: string;
   updated_at?: string;
-}
+};
 
-export interface Note {
+export type Note = {
   id?: number;
   title: string;
   content: string;
   created_at?: string;
   updated_at?: string;
-}
+};
 
-export interface AuthState {
+export type AuthState = {
   isAuthenticated: boolean;
   sessionToken?: string;
-}
+};
 
-export interface AppState {
+export type AppState = {
   auth: AuthState;
   passwords: PasswordEntry[];
   notes: Note[];
   currentView: 'passwords' | 'notes' | 'settings';
-}
+};
 
-export interface PasswordStrength {
+export type PasswordStrength = {
   score: number; // 0-4
   feedback: string[];
   warning?: string;
-}
+};
 
-export interface GeneratorOptions {
+export type GeneratorOptions = {
   include_uppercase: boolean;
   include_lowercase: boolean;
   include_numbers: boolean;
   include_symbols: boolean;
   exclude_ambiguous: boolean;
-}
+};

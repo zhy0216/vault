@@ -1,17 +1,26 @@
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
+import { Check, Eye, EyeOff, Shield, X } from 'lucide-react';
+import type React from 'react';
+import { useState } from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Eye, EyeOff, Shield, Check, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
 
-interface PasswordStrengthIndicatorProps {
+type PasswordStrengthIndicatorProps = {
   password: string;
-}
+};
 
-const PasswordStrengthIndicator: React.FC<PasswordStrengthIndicatorProps> = ({ password }) => {
+const PasswordStrengthIndicator: React.FC<PasswordStrengthIndicatorProps> = ({
+  password,
+}) => {
   const getStrength = (password: string) => {
     const requirements = [
       { test: password.length >= 8, label: 'At least 8 characters' },
@@ -21,40 +30,50 @@ const PasswordStrengthIndicator: React.FC<PasswordStrengthIndicatorProps> = ({ p
       { test: /[^A-Za-z0-9]/.test(password), label: 'Special character' },
     ];
 
-    const score = requirements.filter(req => req.test).length;
+    const score = requirements.filter((req) => req.test).length;
     return { requirements, score };
   };
 
   const { requirements, score } = getStrength(password);
-  
+
   const getStrengthColor = (score: number) => {
-    if (score < 2) return 'bg-red-500';
-    if (score < 4) return 'bg-yellow-500';
+    if (score < 2) {
+      return 'bg-red-500';
+    }
+    if (score < 4) {
+      return 'bg-yellow-500';
+    }
     return 'bg-green-500';
   };
 
   const getStrengthText = (score: number) => {
-    if (score < 2) return 'Weak';
-    if (score < 4) return 'Medium';
+    if (score < 2) {
+      return 'Weak';
+    }
+    if (score < 4) {
+      return 'Medium';
+    }
     return 'Strong';
   };
 
-  if (!password) return null;
+  if (!password) {
+    return null;
+  }
 
   return (
     <div className="space-y-2">
       <div className="flex items-center space-x-2">
-        <div className="flex-1 bg-gray-200 rounded-full h-2">
+        <div className="h-2 flex-1 rounded-full bg-gray-200">
           <div
             className={`h-2 rounded-full transition-all ${getStrengthColor(score)}`}
             style={{ width: `${(score / 5) * 100}%` }}
           />
         </div>
-        <span className="text-sm font-medium">{getStrengthText(score)}</span>
+        <span className="font-medium text-sm">{getStrengthText(score)}</span>
       </div>
       <div className="space-y-1">
         {requirements.map((req, index) => (
-          <div key={index} className="flex items-center space-x-2 text-sm">
+          <div className="flex items-center space-x-2 text-sm" key={index}>
             {req.test ? (
               <Check className="h-3 w-3 text-green-500" />
             ) : (
@@ -108,43 +127,44 @@ export const SetupScreen: React.FC = () => {
 
     try {
       await setupMasterPassword(password);
-    } catch (error) {
+    } catch (_error) {
       setError('Failed to set up master password. Please try again.');
-      console.error('Setup error:', error);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 p-4 dark:bg-gray-900">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
             <Shield className="h-6 w-6 text-primary" />
           </div>
-          <CardTitle className="text-2xl font-bold">Set Up Your Vault</CardTitle>
+          <CardTitle className="font-bold text-2xl">
+            Set Up Your Vault
+          </CardTitle>
           <CardDescription>
             Create a strong master password to protect your data
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form className="space-y-4" onSubmit={handleSubmit}>
             <div className="space-y-2">
               <Label htmlFor="password">Master Password</Label>
               <div className="relative">
                 <Input
+                  className="pr-10"
                   id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Create a strong master password"
-                  className="pr-10"
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
                 />
                 <Button
+                  className="absolute top-0 right-0 h-full px-3 py-2 hover:bg-transparent"
+                  onClick={() => setShowPassword(!showPassword)}
+                  size="sm"
                   type="button"
                   variant="ghost"
-                  size="sm"
-                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                  onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? (
                     <EyeOff className="h-4 w-4" />
@@ -160,19 +180,19 @@ export const SetupScreen: React.FC = () => {
               <Label htmlFor="confirmPassword">Confirm Password</Label>
               <div className="relative">
                 <Input
+                  className="pr-10"
                   id="confirmPassword"
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Confirm your master password"
-                  className="pr-10"
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  value={confirmPassword}
                 />
                 <Button
+                  className="absolute top-0 right-0 h-full px-3 py-2 hover:bg-transparent"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  size="sm"
                   type="button"
                   variant="ghost"
-                  size="sm"
-                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 >
                   {showConfirmPassword ? (
                     <EyeOff className="h-4 w-4" />
@@ -189,14 +209,19 @@ export const SetupScreen: React.FC = () => {
               </Alert>
             )}
 
-            <div className="bg-blue-50 dark:bg-blue-950 p-3 rounded-lg">
-              <p className="text-sm text-blue-800 dark:text-blue-200">
-                <strong>Important:</strong> Your master password cannot be recovered if forgotten. 
-                Make sure to choose something memorable but secure.
+            <div className="rounded-lg bg-blue-50 p-3 dark:bg-blue-950">
+              <p className="text-blue-800 text-sm dark:text-blue-200">
+                <strong>Important:</strong> Your master password cannot be
+                recovered if forgotten. Make sure to choose something memorable
+                but secure.
               </p>
             </div>
 
-            <Button type="submit" className="w-full" disabled={!password || !confirmPassword}>
+            <Button
+              className="w-full"
+              disabled={!(password && confirmPassword)}
+              type="submit"
+            >
               {'Create Vault'}
             </Button>
           </form>

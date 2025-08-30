@@ -1,7 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { Eye, EyeOff, Edit, Trash2, Copy, Plus } from 'lucide-react';
-import { PasswordEntry } from '@/types';
-import { passwordAPI } from '@/lib/tauri';
+import { Copy, Edit, Eye, EyeOff, Plus, Trash2 } from 'lucide-react';
+import type React from 'react';
+import { useEffect, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
 import {
   Table,
   TableBody,
@@ -10,32 +18,32 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { passwordAPI } from '@/lib/tauri';
+import type { PasswordEntry } from '@/types';
 
-interface PasswordListProps {
+type PasswordListProps = {
   onEdit?: (password: PasswordEntry) => void;
   onAdd?: () => void;
-}
+};
 
-export const PasswordList: React.FC<PasswordListProps> = ({ onEdit, onAdd }) => {
+export const PasswordList: React.FC<PasswordListProps> = ({
+  onEdit,
+  onAdd,
+}) => {
   const [passwords, setPasswords] = useState<PasswordEntry[]>([]);
-  const [filteredPasswords, setFilteredPasswords] = useState<PasswordEntry[]>([]);
+  const [filteredPasswords, setFilteredPasswords] = useState<PasswordEntry[]>(
+    []
+  );
   const [searchQuery, setSearchQuery] = useState('');
-  const [visiblePasswords, setVisiblePasswords] = useState<Set<number>>(new Set());
+  const [visiblePasswords, setVisiblePasswords] = useState<Set<number>>(
+    new Set()
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadPasswords();
-  }, []);
+  }, [loadPasswords]);
 
   useEffect(() => {
     if (searchQuery.trim()) {
@@ -43,7 +51,7 @@ export const PasswordList: React.FC<PasswordListProps> = ({ onEdit, onAdd }) => 
     } else {
       setFilteredPasswords(passwords);
     }
-  }, [searchQuery, passwords]);
+  }, [searchQuery, passwords, searchPasswords]);
 
   const loadPasswords = async () => {
     try {
@@ -51,9 +59,8 @@ export const PasswordList: React.FC<PasswordListProps> = ({ onEdit, onAdd }) => 
       const data = await passwordAPI.getPasswords();
       setPasswords(data);
       setFilteredPasswords(data);
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to load passwords');
-      console.error('Error loading passwords:', err);
     } finally {
       setLoading(false);
     }
@@ -63,14 +70,13 @@ export const PasswordList: React.FC<PasswordListProps> = ({ onEdit, onAdd }) => 
     try {
       const results = await passwordAPI.searchPasswords(query);
       setFilteredPasswords(results);
-    } catch (err) {
-      console.error('Error searching passwords:', err);
+    } catch (_err) {
       // Fallback to client-side filtering
       const filtered = passwords.filter(
         (password) =>
           password.website.toLowerCase().includes(query.toLowerCase()) ||
           password.username.toLowerCase().includes(query.toLowerCase()) ||
-          (password.notes && password.notes.toLowerCase().includes(query.toLowerCase()))
+          password.notes?.toLowerCase().includes(query.toLowerCase())
       );
       setFilteredPasswords(filtered);
     }
@@ -86,14 +92,10 @@ export const PasswordList: React.FC<PasswordListProps> = ({ onEdit, onAdd }) => 
     setVisiblePasswords(newVisible);
   };
 
-  const copyToClipboard = async (text: string, type: string) => {
+  const copyToClipboard = async (text: string, _type: string) => {
     try {
       await navigator.clipboard.writeText(text);
-      // TODO: Add toast notification
-      console.log(`${type} copied to clipboard`);
-    } catch (err) {
-      console.error('Failed to copy to clipboard:', err);
-    }
+    } catch (_err) {}
   };
 
   const handleDelete = async (id: number) => {
@@ -104,14 +106,15 @@ export const PasswordList: React.FC<PasswordListProps> = ({ onEdit, onAdd }) => 
     try {
       await passwordAPI.deletePassword(id);
       await loadPasswords(); // Reload the list
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to delete password');
-      console.error('Error deleting password:', err);
     }
   };
 
   const formatDate = (dateString?: string) => {
-    if (!dateString) return 'N/A';
+    if (!dateString) {
+      return 'N/A';
+    }
     return new Date(dateString).toLocaleDateString();
   };
 
@@ -120,7 +123,7 @@ export const PasswordList: React.FC<PasswordListProps> = ({ onEdit, onAdd }) => 
       <Card>
         <CardContent className="flex items-center justify-center p-8">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+            <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-primary border-b-2" />
             <p>Loading passwords...</p>
           </div>
         </CardContent>
@@ -134,7 +137,7 @@ export const PasswordList: React.FC<PasswordListProps> = ({ onEdit, onAdd }) => 
         <CardContent className="p-8">
           <div className="text-center text-red-600">
             <p>{error}</p>
-            <Button onClick={loadPasswords} className="mt-4">
+            <Button className="mt-4" onClick={loadPasswords}>
               Retry
             </Button>
           </div>
@@ -148,24 +151,26 @@ export const PasswordList: React.FC<PasswordListProps> = ({ onEdit, onAdd }) => 
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle>Passwords ({filteredPasswords.length})</CardTitle>
-          <Button onClick={onAdd} className="flex items-center gap-2">
+          <Button className="flex items-center gap-2" onClick={onAdd}>
             <Plus className="h-4 w-4" />
             Add Password
           </Button>
         </div>
         <div className="flex items-center space-x-2">
           <Input
+            className="max-w-sm"
+            onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search passwords..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="max-w-sm"
           />
         </div>
       </CardHeader>
       <CardContent>
         {filteredPasswords.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">
-            {searchQuery ? 'No passwords found matching your search.' : 'No passwords saved yet.'}
+          <div className="py-8 text-center text-muted-foreground">
+            {searchQuery
+              ? 'No passwords found matching your search.'
+              : 'No passwords saved yet.'}
           </div>
         ) : (
           <div className="rounded-md border">
@@ -190,10 +195,12 @@ export const PasswordList: React.FC<PasswordListProps> = ({ onEdit, onAdd }) => 
                       <div className="flex items-center gap-2">
                         <span>{password.username}</span>
                         <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => copyToClipboard(password.username, 'Username')}
                           className="h-6 w-6 p-0"
+                          onClick={() =>
+                            copyToClipboard(password.username, 'Username')
+                          }
+                          size="sm"
+                          variant="ghost"
                         >
                           <Copy className="h-3 w-3" />
                         </Button>
@@ -202,16 +209,15 @@ export const PasswordList: React.FC<PasswordListProps> = ({ onEdit, onAdd }) => 
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <span className="font-mono">
-                          {visiblePasswords.has(password.id!) 
-                            ? password.password 
-                            : '••••••••'
-                          }
+                          {visiblePasswords.has(password.id!)
+                            ? password.password
+                            : '••••••••'}
                         </span>
                         <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => togglePasswordVisibility(password.id!)}
                           className="h-6 w-6 p-0"
+                          onClick={() => togglePasswordVisibility(password.id!)}
+                          size="sm"
+                          variant="ghost"
                         >
                           {visiblePasswords.has(password.id!) ? (
                             <EyeOff className="h-3 w-3" />
@@ -220,47 +226,49 @@ export const PasswordList: React.FC<PasswordListProps> = ({ onEdit, onAdd }) => 
                           )}
                         </Button>
                         <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => copyToClipboard(password.password, 'Password')}
                           className="h-6 w-6 p-0"
+                          onClick={() =>
+                            copyToClipboard(password.password, 'Password')
+                          }
+                          size="sm"
+                          variant="ghost"
                         >
                           <Copy className="h-3 w-3" />
                         </Button>
                       </div>
                     </TableCell>
                     <TableCell>
-                      <span className="text-sm text-muted-foreground">
-                        {password.notes ? (
-                          password.notes.length > 50 
+                      <span className="text-muted-foreground text-sm">
+                        {password.notes
+                          ? password.notes.length > 50
                             ? `${password.notes.substring(0, 50)}...`
                             : password.notes
-                        ) : '-'}
+                          : '-'}
                       </span>
                     </TableCell>
                     <TableCell>
-                      <span className="text-sm text-muted-foreground">
+                      <span className="text-muted-foreground text-sm">
                         {formatDate(password.updated_at)}
                       </span>
                     </TableCell>
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm">
+                          <Button size="sm" variant="ghost">
                             •••
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem
-                            onClick={() => onEdit?.(password)}
                             className="flex items-center gap-2"
+                            onClick={() => onEdit?.(password)}
                           >
                             <Edit className="h-4 w-4" />
                             Edit
                           </DropdownMenuItem>
                           <DropdownMenuItem
-                            onClick={() => handleDelete(password.id!)}
                             className="flex items-center gap-2 text-red-600"
+                            onClick={() => handleDelete(password.id!)}
                           >
                             <Trash2 className="h-4 w-4" />
                             Delete

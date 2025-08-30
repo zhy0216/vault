@@ -1,6 +1,7 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import type React from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import { authAPI } from '@/lib/tauri';
-import { AuthState } from '@/types';
+import type { AuthState } from '@/types';
 
 interface AuthContextType extends AuthState {
   login: (password: string) => Promise<boolean>;
@@ -19,7 +20,9 @@ export const useAuth = () => {
   return context;
 };
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [authState, setAuthState] = useState<AuthState>({
     isAuthenticated: false,
     sessionToken: undefined,
@@ -27,7 +30,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const checkAuthStatus = async () => {
     try {
-      
       const sessionToken = localStorage.getItem('sessionToken');
       if (sessionToken) {
         const isValid = await authAPI.validateSession(sessionToken);
@@ -37,17 +39,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             sessionToken,
           });
           return;
-        } else {
-          localStorage.removeItem('sessionToken');
         }
+        localStorage.removeItem('sessionToken');
       }
-      
+
       setAuthState({
         isAuthenticated: false,
         sessionToken: undefined,
       });
-    } catch (error) {
-      console.error('Failed to check auth status:', error);
+    } catch (_error) {
       setAuthState({
         isAuthenticated: false,
         sessionToken: undefined,
@@ -57,39 +57,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (password: string): Promise<boolean> => {
     try {
-      
-      console.log('Attempting to verify password...'); // Debug log
       const isValid = await authAPI.verifyMasterPassword(password);
-      console.log('Password verification result:', isValid); // Debug log
-      
+
       if (isValid) {
         const sessionToken = await authAPI.createSession();
         localStorage.setItem('sessionToken', sessionToken);
-        
+
         setAuthState({
           isAuthenticated: true,
           sessionToken,
         });
         return true;
-      } else {
-        console.log('Password invalid'); // Debug log
-        return false;
       }
-    } catch (error) {
-      console.error('Login failed:', error);
+      return false;
+    } catch (_error) {
       return false;
     }
   };
 
   const logout = async () => {
     try {
-      const sessionToken = authState.sessionToken || localStorage.getItem('sessionToken');
+      const sessionToken =
+        authState.sessionToken || localStorage.getItem('sessionToken');
       if (sessionToken) {
         await authAPI.lockSession(sessionToken);
         localStorage.removeItem('sessionToken');
       }
-    } catch (error) {
-      console.error('Logout error:', error);
+    } catch (_error) {
     } finally {
       setAuthState({
         isAuthenticated: false,
@@ -99,19 +93,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const setupMasterPassword = async (password: string): Promise<void> => {
-    try {
-      await authAPI.setMasterPassword(password);
-      
-      // Automatically log in after setup
-      await login(password);
-    } catch (error) {
-      throw error;
-    }
+    await authAPI.setMasterPassword(password);
+
+    // Automatically log in after setup
+    await login(password);
   };
 
   useEffect(() => {
     checkAuthStatus();
-  }, []);
+  }, [checkAuthStatus]);
 
   const value: AuthContextType = {
     ...authState,

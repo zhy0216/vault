@@ -1,7 +1,8 @@
-import React, { useEffect, useState, memo } from 'react';
+import type React from 'react';
+import { memo, useEffect, useState } from 'react';
+import { authAPI } from '@/lib/tauri';
 import { LoginScreen } from './LoginScreen';
 import { SetupScreen } from './SetupScreen';
-import { authAPI } from '@/lib/tauri';
 
 export const AuthWrapper: React.FC<{ children: React.ReactNode }> = memo(() => {
   const [isSetup, setIsSetup] = useState<boolean | null>(null);
@@ -12,8 +13,7 @@ export const AuthWrapper: React.FC<{ children: React.ReactNode }> = memo(() => {
       try {
         const isMasterPasswordSet = await authAPI.isMasterPasswordSet();
         setIsSetup(isMasterPasswordSet);
-      } catch (error) {
-        console.error('Failed to check setup status:', error);
+      } catch (_error) {
         setIsSetup(false);
       } finally {
         setIsLoading(false);
@@ -25,10 +25,12 @@ export const AuthWrapper: React.FC<{ children: React.ReactNode }> = memo(() => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Loading...</p>
+          <div className="mx-auto h-8 w-8 animate-spin rounded-full border-primary border-b-2" />
+          <p className="mt-2 text-gray-600 text-sm dark:text-gray-400">
+            Loading...
+          </p>
         </div>
       </div>
     );

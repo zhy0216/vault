@@ -1,24 +1,25 @@
-import React, { useState, useEffect } from 'react';
-import { Eye, EyeOff, RefreshCw, Check, X } from 'lucide-react';
-import { PasswordEntry, PasswordStrength } from '@/types';
-import { passwordAPI } from '@/lib/tauri';
+import { Check, Eye, EyeOff, RefreshCw, X } from 'lucide-react';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { passwordAPI } from '@/lib/tauri';
+import type { PasswordEntry, PasswordStrength } from '@/types';
 
-interface PasswordFormProps {
+type PasswordFormProps = {
   isOpen: boolean;
   onClose: () => void;
   onSave: () => void;
   editingPassword?: PasswordEntry | null;
-}
+};
 
 export const PasswordForm: React.FC<PasswordFormProps> = ({
   isOpen,
@@ -53,7 +54,7 @@ export const PasswordForm: React.FC<PasswordFormProps> = ({
     }
     setError(null);
     setShowPassword(false);
-  }, [editingPassword, isOpen]);
+  }, [editingPassword]);
 
   useEffect(() => {
     if (formData.password) {
@@ -61,7 +62,7 @@ export const PasswordForm: React.FC<PasswordFormProps> = ({
     } else {
       setPasswordStrength({ score: 0, feedback: [] });
     }
-  }, [formData.password]);
+  }, [formData.password, calculatePasswordStrength]);
 
   const calculatePasswordStrength = (password: string) => {
     let score = 0;
@@ -103,31 +104,40 @@ export const PasswordForm: React.FC<PasswordFormProps> = ({
     const lowercase = 'abcdefghijklmnopqrstuvwxyz';
     const numbers = '0123456789';
     const symbols = '!@#$%^&*()_+-=[]{}|;:,.<>?';
-    
+
     const allChars = uppercase + lowercase + numbers + symbols;
     let password = '';
-    
+
     // Ensure at least one character from each category
     password += uppercase[Math.floor(Math.random() * uppercase.length)];
     password += lowercase[Math.floor(Math.random() * lowercase.length)];
     password += numbers[Math.floor(Math.random() * numbers.length)];
     password += symbols[Math.floor(Math.random() * symbols.length)];
-    
+
     // Fill the rest randomly
     for (let i = 4; i < 16; i++) {
       password += allChars[Math.floor(Math.random() * allChars.length)];
     }
-    
+
     // Shuffle the password
-    const shuffled = password.split('').sort(() => Math.random() - 0.5).join('');
-    
-    setFormData(prev => ({ ...prev, password: shuffled }));
+    const shuffled = password
+      .split('')
+      .sort(() => Math.random() - 0.5)
+      .join('');
+
+    setFormData((prev) => ({ ...prev, password: shuffled }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!formData.website.trim() || !formData.username.trim() || !formData.password.trim()) {
+
+    if (
+      !(
+        formData.website.trim() &&
+        formData.username.trim() &&
+        formData.password.trim()
+      )
+    ) {
       setError('Website, username, and password are required');
       return;
     }
@@ -144,9 +154,8 @@ export const PasswordForm: React.FC<PasswordFormProps> = ({
 
       onSave();
       onClose();
-    } catch (err) {
+    } catch (_err) {
       setError('Failed to save password');
-      console.error('Error saving password:', err);
     } finally {
       setSaving(false);
     }
@@ -185,17 +194,17 @@ export const PasswordForm: React.FC<PasswordFormProps> = ({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog onOpenChange={onClose} open={isOpen}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>
             {editingPassword ? 'Edit Password' : 'Add New Password'}
           </DialogTitle>
         </DialogHeader>
-        
-        <form onSubmit={handleSubmit} className="space-y-4">
+
+        <form className="space-y-4" onSubmit={handleSubmit}>
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+            <div className="rounded border border-red-200 bg-red-50 px-4 py-3 text-red-700">
               {error}
             </div>
           )}
@@ -204,11 +213,13 @@ export const PasswordForm: React.FC<PasswordFormProps> = ({
             <Label htmlFor="website">Website *</Label>
             <Input
               id="website"
-              type="text"
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, website: e.target.value }))
+              }
               placeholder="example.com"
-              value={formData.website}
-              onChange={(e) => setFormData(prev => ({ ...prev, website: e.target.value }))}
               required
+              type="text"
+              value={formData.website}
             />
           </div>
 
@@ -216,11 +227,13 @@ export const PasswordForm: React.FC<PasswordFormProps> = ({
             <Label htmlFor="username">Username *</Label>
             <Input
               id="username"
-              type="text"
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, username: e.target.value }))
+              }
               placeholder="your-username"
-              value={formData.username}
-              onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
               required
+              type="text"
+              value={formData.username}
             />
           </div>
 
@@ -230,51 +243,62 @@ export const PasswordForm: React.FC<PasswordFormProps> = ({
               <div className="relative flex-1">
                 <Input
                   id="password"
-                  type={showPassword ? 'text' : 'password'}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      password: e.target.value,
+                    }))
+                  }
                   placeholder="Enter password"
-                  value={formData.password}
-                  onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
                   required
+                  type={showPassword ? 'text' : 'password'}
+                  value={formData.password}
                 />
                 <Button
+                  className="-translate-y-1/2 absolute top-1/2 right-2 h-6 w-6 transform p-0"
+                  onClick={() => setShowPassword(!showPassword)}
+                  size="sm"
                   type="button"
                   variant="ghost"
-                  size="sm"
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0"
-                  onClick={() => setShowPassword(!showPassword)}
                 >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
                 </Button>
               </div>
               <Button
+                className="flex items-center gap-2"
+                onClick={generatePassword}
                 type="button"
                 variant="outline"
-                onClick={generatePassword}
-                className="flex items-center gap-2"
               >
                 <RefreshCw className="h-4 w-4" />
                 Generate
               </Button>
             </div>
-            
+
             {formData.password && (
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
-                  <div className="flex-1 bg-gray-200 rounded-full h-2">
+                  <div className="h-2 flex-1 rounded-full bg-gray-200">
                     <div
                       className={`h-2 rounded-full transition-all duration-300 ${getStrengthColor(passwordStrength.score)}`}
-                      style={{ width: `${(passwordStrength.score / 4) * 100}%` }}
+                      style={{
+                        width: `${(passwordStrength.score / 4) * 100}%`,
+                      }}
                     />
                   </div>
-                  <span className="text-sm font-medium">
+                  <span className="font-medium text-sm">
                     {getStrengthText(passwordStrength.score)}
                   </span>
                 </div>
-                
+
                 {passwordStrength.feedback.length > 0 && (
-                  <div className="text-sm text-muted-foreground">
+                  <div className="text-muted-foreground text-sm">
                     <p>Suggestions:</p>
-                    <ul className="list-disc list-inside space-y-1">
+                    <ul className="list-inside list-disc space-y-1">
                       {passwordStrength.feedback.map((suggestion, index) => (
                         <li key={index}>{suggestion}</li>
                       ))}
@@ -288,24 +312,26 @@ export const PasswordForm: React.FC<PasswordFormProps> = ({
           <div className="space-y-2">
             <Label htmlFor="notes">Notes</Label>
             <textarea
-              id="notes"
               className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              id="notes"
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, notes: e.target.value }))
+              }
               placeholder="Optional notes about this password"
               value={formData.notes || ''}
-              onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
             />
           </div>
 
           <DialogFooter className="flex gap-2">
-            <Button type="button" variant="outline" onClick={onClose}>
-              <X className="h-4 w-4 mr-2" />
+            <Button onClick={onClose} type="button" variant="outline">
+              <X className="mr-2 h-4 w-4" />
               Cancel
             </Button>
-            <Button type="submit" disabled={loading}>
+            <Button disabled={loading} type="submit">
               {loading ? (
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
+                <div className="mr-2 h-4 w-4 animate-spin rounded-full border-white border-b-2" />
               ) : (
-                <Check className="h-4 w-4 mr-2" />
+                <Check className="mr-2 h-4 w-4" />
               )}
               {editingPassword ? 'Update' : 'Save'} Password
             </Button>

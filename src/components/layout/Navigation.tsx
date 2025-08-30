@@ -1,17 +1,17 @@
-import React from 'react';
+import { FileText, Home, Key, LogOut, Moon, Settings, Sun } from 'lucide-react';
+import type React from 'react';
 import { Button } from '@/components/ui/button';
-import { Key, FileText, Settings, LogOut, Home, Moon, Sun } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 
 type ViewType = 'home' | 'passwords' | 'notes' | 'settings';
 
-interface NavigationProps {
+type NavigationProps = {
   currentView: ViewType;
   onNavigate: (view: ViewType) => void;
   darkMode?: boolean;
   onToggleTheme?: () => void;
-}
+};
 
 export const Navigation: React.FC<NavigationProps> = ({
   currentView,
@@ -53,29 +53,29 @@ export const Navigation: React.FC<NavigationProps> = ({
   };
 
   return (
-    <aside className="fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-800 border-r">
+    <aside className="fixed inset-y-0 left-0 z-50 w-64 border-r bg-white dark:bg-gray-800">
       {/* Logo */}
-      <div className="flex items-center space-x-2 px-6 py-4 border-b">
-        <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center">
+      <div className="flex items-center space-x-2 border-b px-6 py-4">
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
           <Key className="h-4 w-4 text-white" />
         </div>
-        <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
+        <h1 className="font-semibold text-gray-900 text-xl dark:text-white">
           Vault
         </h1>
       </div>
 
       {/* Navigation Items */}
-      <nav className="flex-1 px-4 py-6 space-y-2">
+      <nav className="flex-1 space-y-2 px-4 py-6">
         {navigationItems.map((item) => (
           <button
+            className={cn(
+              'flex w-full items-center space-x-3 rounded-lg px-3 py-2 font-medium text-sm transition-colors',
+              currentView === item.id
+                ? 'bg-primary text-primary-foreground'
+                : 'text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-gray-700'
+            )}
             key={item.id}
             onClick={() => handleNavigate(item.id)}
-            className={cn(
-              "w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-              currentView === item.id
-                ? "bg-primary text-primary-foreground"
-                : "text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-            )}
           >
             <item.icon className="h-5 w-5" />
             <span>{item.label}</span>
@@ -84,19 +84,19 @@ export const Navigation: React.FC<NavigationProps> = ({
       </nav>
 
       {/* Bottom Actions */}
-      <div className="border-t px-4 py-4 space-y-2">
+      <div className="space-y-2 border-t px-4 py-4">
         {/* Theme Toggle */}
         {onToggleTheme && (
           <Button
-            variant="ghost"
-            size="sm"
-            onClick={onToggleTheme}
             className="w-full justify-start"
+            onClick={onToggleTheme}
+            size="sm"
+            variant="ghost"
           >
             {darkMode ? (
-              <Sun className="h-4 w-4 mr-3" />
+              <Sun className="mr-3 h-4 w-4" />
             ) : (
-              <Moon className="h-4 w-4 mr-3" />
+              <Moon className="mr-3 h-4 w-4" />
             )}
             {darkMode ? 'Light Mode' : 'Dark Mode'}
           </Button>
@@ -104,12 +104,12 @@ export const Navigation: React.FC<NavigationProps> = ({
 
         {/* Logout */}
         <Button
-          variant="ghost"
-          size="sm"
+          className="w-full justify-start text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950 dark:hover:text-red-300"
           onClick={logout}
-          className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-950"
+          size="sm"
+          variant="ghost"
         >
-          <LogOut className="h-4 w-4 mr-3" />
+          <LogOut className="mr-3 h-4 w-4" />
           Lock Vault
         </Button>
       </div>

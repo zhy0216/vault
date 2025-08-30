@@ -1,5 +1,5 @@
 import { invoke } from '@tauri-apps/api/core';
-import { PasswordEntry, Note } from '@/types';
+import type { Note, PasswordEntry } from '@/types';
 
 // Authentication commands
 export const authAPI = {
@@ -25,7 +25,7 @@ export const authAPI = {
 
   async lockSession(token: string): Promise<void> {
     return await invoke('lock_session', { token });
-  }
+  },
 };
 
 // Password management commands
@@ -48,7 +48,7 @@ export const passwordAPI = {
 
   async searchPasswords(query: string): Promise<PasswordEntry[]> {
     return await invoke('search_passwords', { query });
-  }
+  },
 };
 
 // Notes management commands
@@ -67,5 +67,5 @@ export const notesAPI = {
 
   async deleteNote(id: number): Promise<void> {
     return await invoke('delete_note', { id });
-  }
+  },
 };

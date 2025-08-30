@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { Note } from '@/types';
-import { NotesList } from './NotesList';
+import type React from 'react';
+import { useState } from 'react';
+import type { Note } from '@/types';
 import { NoteEditor } from './NoteEditor';
+import { NotesList } from './NotesList';
 
 export const NotesManager: React.FC = () => {
   const [isEditorOpen, setIsEditorOpen] = useState(false);
@@ -25,22 +26,22 @@ export const NotesManager: React.FC = () => {
 
   const handleEditorSave = () => {
     // Trigger a refresh of the notes list
-    setRefreshKey(prev => prev + 1);
+    setRefreshKey((prev) => prev + 1);
   };
 
   return (
     <div className="space-y-6">
       <NotesList
         key={refreshKey}
-        onEdit={handleEditNote}
         onAdd={handleAddNote}
+        onEdit={handleEditNote}
       />
-      
+
       <NoteEditor
+        editingNote={editingNote}
         isOpen={isEditorOpen}
         onClose={handleEditorClose}
         onSave={handleEditorSave}
-        editingNote={editingNote}
       />
     </div>
   );

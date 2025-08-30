@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import {
   Dialog,
   DialogContent,
@@ -7,14 +7,14 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 
-interface ModalProps {
+type ModalProps = {
   isOpen: boolean;
   onClose: () => void;
   title?: string;
   description?: string;
   children: React.ReactNode;
   className?: string;
-}
+};
 
 export const Modal: React.FC<ModalProps> = ({
   isOpen,
@@ -25,12 +25,14 @@ export const Modal: React.FC<ModalProps> = ({
   className,
 }) => {
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog onOpenChange={onClose} open={isOpen}>
       <DialogContent className={className}>
         {(title || description) && (
           <DialogHeader>
             {title && <DialogTitle>{title}</DialogTitle>}
-            {description && <DialogDescription>{description}</DialogDescription>}
+            {description && (
+              <DialogDescription>{description}</DialogDescription>
+            )}
           </DialogHeader>
         )}
         {children}

@@ -2,11 +2,11 @@ import { useEffect } from 'react';
 
 type ViewType = 'home' | 'passwords' | 'notes' | 'settings';
 
-interface KeyboardShortcutsProps {
+type KeyboardShortcutsProps = {
   onNavigate: (view: ViewType) => void;
   onLogout: () => void;
   currentView: ViewType;
-}
+};
 
 export const useKeyboardShortcuts = ({
   onNavigate,
