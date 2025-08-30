@@ -68,7 +68,6 @@ export const PasswordManager: React.FC = () => {
       {viewMode === 'form' && (
         <PasswordForm
           editingPassword={editingPassword}
-          isOpen={true}
           onClose={handleFormClose}
           onSave={handleFormSave}
         />

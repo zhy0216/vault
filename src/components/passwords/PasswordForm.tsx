@@ -2,27 +2,19 @@ import { Check, Eye, EyeOff, RefreshCw, X } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { passwordAPI } from '@/lib/tauri';
 import type { PasswordEntry, PasswordStrength } from '@/types';
 
 type PasswordFormProps = {
-  isOpen: boolean;
   onClose: () => void;
   onSave: () => void;
   editingPassword?: PasswordEntry | null;
 };
 
 export const PasswordForm: React.FC<PasswordFormProps> = ({
-  isOpen,
   onClose,
   onSave,
   editingPassword,
@@ -194,14 +186,13 @@ export const PasswordForm: React.FC<PasswordFormProps> = ({
   };
 
   return (
-    <Dialog onOpenChange={onClose} open={isOpen}>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
-          <DialogTitle>
-            {editingPassword ? 'Edit Password' : 'Add New Password'}
-          </DialogTitle>
-        </DialogHeader>
-
+    <Card className="max-w-2xl">
+      <CardHeader>
+        <CardTitle>
+          {editingPassword ? 'Edit Password' : 'Add New Password'}
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
         <form className="space-y-4" onSubmit={handleSubmit}>
           {error && (
             <div className="rounded border border-red-200 bg-red-50 px-4 py-3 text-red-700">
@@ -322,7 +313,7 @@ export const PasswordForm: React.FC<PasswordFormProps> = ({
             />
           </div>
 
-          <DialogFooter className="flex gap-2">
+          <div className="flex gap-2 pt-4">
             <Button onClick={onClose} type="button" variant="outline">
               <X className="mr-2 h-4 w-4" />
               Cancel
@@ -335,9 +326,9 @@ export const PasswordForm: React.FC<PasswordFormProps> = ({
               )}
               {editingPassword ? 'Update' : 'Save'} Password
             </Button>
-          </DialogFooter>
+          </div>
         </form>
-      </DialogContent>
-    </Dialog>
+      </CardContent>
+    </Card>
   );
 };

@@ -3,8 +3,9 @@ import { useState } from 'react';
 import type { Note } from '@/types';
 import { NoteEditor } from './NoteEditor';
 import { NotesList } from './NotesList';
+import { NoteViewer } from './NoteViewer';
 
-type ViewMode = 'list' | 'editor';
+type ViewMode = 'list' | 'viewer' | 'editor';
 
 export const NotesManager: React.FC = () => {
   const [viewMode, setViewMode] = useState<ViewMode>('list');
@@ -14,6 +15,11 @@ export const NotesManager: React.FC = () => {
   const handleAddNote = () => {
     setEditingNote(null);
     setViewMode('editor');
+  };
+
+  const handleViewNote = (note: Note) => {
+    setEditingNote(note);
+    setViewMode('viewer');
   };
 
   const handleEditNote = (note: Note) => {
@@ -38,6 +44,12 @@ export const NotesManager: React.FC = () => {
         <NotesList
           key={refreshKey}
           onAdd={handleAddNote}
+          onEdit={handleViewNote}
+        />
+      ) : viewMode === 'viewer' ? (
+        <NoteViewer
+          note={editingNote!}
+          onClose={handleEditorClose}
           onEdit={handleEditNote}
         />
       ) : (
