@@ -19,7 +19,6 @@ export interface Note {
 export interface AuthState {
   isAuthenticated: boolean;
   sessionToken?: string;
-  isLoading: boolean;
 }
 
 export interface AppState {

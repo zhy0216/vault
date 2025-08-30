@@ -30,7 +30,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
-  const autoSaveTimeoutRef = useRef<number>();
+  const autoSaveTimeoutRef = useRef<number | undefined>(undefined);
   const initialDataRef = useRef<{ title: string; content: string } | null>(null);
 
   // Initialize form when editing note changes

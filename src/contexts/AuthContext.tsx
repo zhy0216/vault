@@ -23,12 +23,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [authState, setAuthState] = useState<AuthState>({
     isAuthenticated: false,
     sessionToken: undefined,
-    isLoading: true,
   });
 
   const checkAuthStatus = async () => {
     try {
-      setAuthState(prev => ({ ...prev, isLoading: true }));
       
       const sessionToken = localStorage.getItem('sessionToken');
       if (sessionToken) {
@@ -37,7 +35,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setAuthState({
             isAuthenticated: true,
             sessionToken,
-            isLoading: false,
           });
           return;
         } else {
@@ -48,23 +45,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setAuthState({
         isAuthenticated: false,
         sessionToken: undefined,
-        isLoading: false,
       });
     } catch (error) {
       console.error('Failed to check auth status:', error);
       setAuthState({
         isAuthenticated: false,
         sessionToken: undefined,
-        isLoading: false,
       });
     }
   };
 
   const login = async (password: string): Promise<boolean> => {
     try {
-      setAuthState(prev => ({ ...prev, isLoading: true }));
       
+      console.log('Attempting to verify password...'); // Debug log
       const isValid = await authAPI.verifyMasterPassword(password);
+      console.log('Password verification result:', isValid); // Debug log
+      
       if (isValid) {
         const sessionToken = await authAPI.createSession();
         localStorage.setItem('sessionToken', sessionToken);
@@ -72,16 +69,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setAuthState({
           isAuthenticated: true,
           sessionToken,
-          isLoading: false,
         });
         return true;
       } else {
-        setAuthState(prev => ({ ...prev, isLoading: false }));
+        console.log('Password invalid'); // Debug log
         return false;
       }
     } catch (error) {
       console.error('Login failed:', error);
-      setAuthState(prev => ({ ...prev, isLoading: false }));
       return false;
     }
   };
@@ -99,20 +94,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setAuthState({
         isAuthenticated: false,
         sessionToken: undefined,
-        isLoading: false,
       });
     }
   };
 
   const setupMasterPassword = async (password: string): Promise<void> => {
     try {
-      setAuthState(prev => ({ ...prev, isLoading: true }));
       await authAPI.setMasterPassword(password);
       
       // Automatically log in after setup
       await login(password);
     } catch (error) {
-      setAuthState(prev => ({ ...prev, isLoading: false }));
       throw error;
     }
   };

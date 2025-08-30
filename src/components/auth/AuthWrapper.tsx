@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, memo } from 'react';
 import { LoginScreen } from './LoginScreen';
 import { SetupScreen } from './SetupScreen';
 import { authAPI } from '@/lib/tauri';
 
-export const AuthWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AuthWrapper: React.FC<{ children: React.ReactNode }> = memo(() => {
   const [isSetup, setIsSetup] = useState<boolean | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -39,4 +39,4 @@ export const AuthWrapper: React.FC<{ children: React.ReactNode }> = ({ children 
   }
 
   return <LoginScreen />;
-};
+});

@@ -76,7 +76,7 @@ export const SetupScreen: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState('');
-  const { setupMasterPassword, isLoading } = useAuth();
+  const { setupMasterPassword } = useAuth();
 
   const validatePassword = (password: string) => {
     if (password.length < 8) {
@@ -138,7 +138,6 @@ export const SetupScreen: React.FC = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Create a strong master password"
                   className="pr-10"
-                  disabled={isLoading}
                 />
                 <Button
                   type="button"
@@ -146,7 +145,6 @@ export const SetupScreen: React.FC = () => {
                   size="sm"
                   className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                   onClick={() => setShowPassword(!showPassword)}
-                  disabled={isLoading}
                 >
                   {showPassword ? (
                     <EyeOff className="h-4 w-4" />
@@ -168,7 +166,6 @@ export const SetupScreen: React.FC = () => {
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Confirm your master password"
                   className="pr-10"
-                  disabled={isLoading}
                 />
                 <Button
                   type="button"
@@ -176,7 +173,6 @@ export const SetupScreen: React.FC = () => {
                   size="sm"
                   className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  disabled={isLoading}
                 >
                   {showConfirmPassword ? (
                     <EyeOff className="h-4 w-4" />
@@ -200,8 +196,8 @@ export const SetupScreen: React.FC = () => {
               </p>
             </div>
 
-            <Button type="submit" className="w-full" disabled={isLoading || !password || !confirmPassword}>
-              {isLoading ? 'Setting up...' : 'Create Vault'}
+            <Button type="submit" className="w-full" disabled={!password || !confirmPassword}>
+              {'Create Vault'}
             </Button>
           </form>
         </CardContent>
