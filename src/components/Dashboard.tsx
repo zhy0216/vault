@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { LogOut, Key, FileText, Settings, ArrowLeft } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
+import { Key, FileText, Settings } from 'lucide-react';
+import { Layout } from '@/components/layout';
 import { PasswordManager } from '@/components/passwords';
 import { NotesManager } from '@/components/notes';
+import { useAuth } from '@/contexts/AuthContext';
+import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 
 type ViewType = 'home' | 'passwords' | 'notes' | 'settings';
 
@@ -12,17 +14,16 @@ export const Dashboard: React.FC = () => {
   const { logout } = useAuth();
   const [currentView, setCurrentView] = useState<ViewType>('home');
 
-  const handleLogout = () => {
-    logout();
-  };
-
   const navigateToView = (view: ViewType) => {
     setCurrentView(view);
   };
 
-  const navigateHome = () => {
-    setCurrentView('home');
-  };
+  // Enable keyboard shortcuts
+  useKeyboardShortcuts({
+    onNavigate: navigateToView,
+    onLogout: logout,
+    currentView,
+  });
 
   const renderContent = () => {
     switch (currentView) {
@@ -129,42 +130,8 @@ export const Dashboard: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <header className="bg-white dark:bg-gray-800 shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-4">
-              {currentView !== 'home' && (
-                <Button variant="ghost" size="sm" onClick={navigateHome}>
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Back
-                </Button>
-              )}
-              <div className="flex items-center space-x-2">
-                <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center">
-                  <Key className="h-4 w-4 text-white" />
-                </div>
-                <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
-                  Vault
-                  {currentView !== 'home' && (
-                    <span className="text-sm font-normal text-muted-foreground ml-2">
-                      / {currentView.charAt(0).toUpperCase() + currentView.slice(1)}
-                    </span>
-                  )}
-                </h1>
-              </div>
-            </div>
-            <Button variant="outline" onClick={handleLogout}>
-              <LogOut className="h-4 w-4 mr-2" />
-              Lock Vault
-            </Button>
-          </div>
-        </div>
-      </header>
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {renderContent()}
-      </main>
-    </div>
+    <Layout currentView={currentView} onNavigate={navigateToView}>
+      {renderContent()}
+    </Layout>
   );
 };
