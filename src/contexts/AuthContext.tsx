@@ -2,6 +2,7 @@ import type React from 'react';
 import { createContext, useContext, useEffect, useState } from 'react';
 import { authAPI } from '@/lib/tauri';
 import type { AuthState } from '@/types';
+import { useAutoLock } from '@/hooks/useAutoLock';
 
 interface AuthContextType extends AuthState {
   login: (password: string) => Promise<boolean>;
@@ -27,6 +28,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     isAuthenticated: false,
     sessionToken: undefined,
   });
+
+  // Get auto-lock timeout from settings (default: 15 minutes)
+  const getAutoLockTimeout = () => {
+    try {
+      const settings = localStorage.getItem('vault-settings');
+      if (settings) {
+        const parsedSettings = JSON.parse(settings);
+        return parsedSettings.autoLockTimeout || 15;
+      }
+    } catch (error) {
+      console.error('Failed to parse settings for auto-lock:', error);
+    }
+    return 15; // Default timeout
+  };
 
   const checkAuthStatus = async () => {
     try {
@@ -94,6 +109,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       });
     }
   };
+
+  // Setup auto-lock functionality
+  useAutoLock({
+    timeout: getAutoLockTimeout(),
+    onLock: logout,
+    isAuthenticated: authState.isAuthenticated,
+  });
 
   const setupMasterPassword = async (password: string): Promise<void> => {
     await authAPI.setMasterPassword(password);
