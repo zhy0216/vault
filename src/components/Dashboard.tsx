@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { LogOut, Key, FileText, Settings, ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { PasswordManager } from '@/components/passwords';
+import { NotesManager } from '@/components/notes';
 
 type ViewType = 'home' | 'passwords' | 'notes' | 'settings';
 
@@ -28,15 +29,7 @@ export const Dashboard: React.FC = () => {
       case 'passwords':
         return <PasswordManager />;
       case 'notes':
-        return (
-          <Card>
-            <CardContent className="p-8 text-center">
-              <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Notes Management</h3>
-              <p className="text-muted-foreground">Coming soon...</p>
-            </CardContent>
-          </Card>
-        );
+        return <NotesManager />;
       case 'settings':
         return (
           <Card>
