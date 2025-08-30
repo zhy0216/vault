@@ -4,45 +4,49 @@ import type { Note } from '@/types';
 import { NoteEditor } from './NoteEditor';
 import { NotesList } from './NotesList';
 
+type ViewMode = 'list' | 'editor';
+
 export const NotesManager: React.FC = () => {
-  const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [editingNote, setEditingNote] = useState<Note | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
   const handleAddNote = () => {
     setEditingNote(null);
-    setIsEditorOpen(true);
+    setViewMode('editor');
   };
 
   const handleEditNote = (note: Note) => {
     setEditingNote(note);
-    setIsEditorOpen(true);
+    setViewMode('editor');
   };
 
   const handleEditorClose = () => {
-    setIsEditorOpen(false);
+    setViewMode('list');
     setEditingNote(null);
   };
 
   const handleEditorSave = () => {
     // Trigger a refresh of the notes list
     setRefreshKey((prev) => prev + 1);
+    setViewMode('list');
   };
 
   return (
     <div className="space-y-6">
-      <NotesList
-        key={refreshKey}
-        onAdd={handleAddNote}
-        onEdit={handleEditNote}
-      />
-
-      <NoteEditor
-        editingNote={editingNote}
-        isOpen={isEditorOpen}
-        onClose={handleEditorClose}
-        onSave={handleEditorSave}
-      />
+      {viewMode === 'list' ? (
+        <NotesList
+          key={refreshKey}
+          onAdd={handleAddNote}
+          onEdit={handleEditNote}
+        />
+      ) : (
+        <NoteEditor
+          editingNote={editingNote}
+          onClose={handleEditorClose}
+          onSave={handleEditorSave}
+        />
+      )}
     </div>
   );
 };

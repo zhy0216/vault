@@ -26,6 +26,10 @@ export const authAPI = {
   async lockSession(token: string): Promise<void> {
     return await invoke('lock_session', { token });
   },
+
+  async initializeDatabase(password: string): Promise<void> {
+    return await invoke('initialize_database', { password });
+  },
 };
 
 // Password management commands

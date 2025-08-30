@@ -53,17 +53,23 @@ impl AuthService {
             return Err(DatabaseError::Migration("Account temporarily locked due to too many failed attempts".to_string()));
         }
 
-        // Try to validate the master password by attempting to open the encrypted database
-        let is_valid = DatabaseManager::validate_master_password(password).await?;
-
-        if is_valid {
-            // Reset login attempts on successful login
-            self.login_attempts.remove(client_id);
-            Ok(true)
-        } else {
-            // Record failed attempt
-            self.record_failed_attempt(client_id);
-            Ok(false)
+        // Try to validate the master password by attempting to create a database manager
+        // This is more reliable than just opening the database
+        match DatabaseManager::new_with_encryption(password).await {
+            Ok(_) => {
+                // Reset login attempts on successful login
+                self.login_attempts.remove(client_id);
+                Ok(true)
+            }
+            Err(DatabaseError::Connection(_)) => {
+                // This likely means wrong password
+                self.record_failed_attempt(client_id);
+                Ok(false)
+            }
+            Err(e) => {
+                // Other errors should be propagated
+                Err(e)
+            }
         }
     }
 

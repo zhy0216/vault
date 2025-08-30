@@ -159,7 +159,11 @@ export const NotesList: React.FC<NotesListProps> = ({ onEdit, onAdd }) => {
       ) : (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {filteredNotes.map((note) => (
-            <Card className="transition-shadow hover:shadow-lg" key={note.id}>
+            <Card 
+              className="cursor-pointer transition-all hover:shadow-lg hover:scale-[1.02]" 
+              key={note.id}
+              onClick={() => onEdit(note)}
+            >
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
                   <CardTitle className="truncate pr-2 text-lg">
@@ -168,17 +172,25 @@ export const NotesList: React.FC<NotesListProps> = ({ onEdit, onAdd }) => {
                   <div className="flex flex-shrink-0 gap-1">
                     <Button
                       className="h-8 w-8 p-0"
-                      onClick={() => onEdit(note)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onEdit(note);
+                      }}
                       size="sm"
                       variant="ghost"
+                      title="Edit note"
                     >
                       <Edit className="h-4 w-4" />
                     </Button>
                     <Button
                       className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
-                      onClick={() => note.id && handleDelete(note.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        note.id && handleDelete(note.id);
+                      }}
                       size="sm"
                       variant="ghost"
+                      title="Delete note"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -195,14 +207,9 @@ export const NotesList: React.FC<NotesListProps> = ({ onEdit, onAdd }) => {
                   {truncateContent(note.content)}
                 </p>
                 {note.content.length > 150 && (
-                  <Button
-                    className="mt-2 h-auto p-0 text-xs"
-                    onClick={() => onEdit(note)}
-                    size="sm"
-                    variant="link"
-                  >
-                    Read more
-                  </Button>
+                  <div className="mt-2 text-xs text-muted-foreground">
+                    Click to read more...
+                  </div>
                 )}
               </CardContent>
             </Card>

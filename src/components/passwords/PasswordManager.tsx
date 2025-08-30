@@ -3,48 +3,84 @@ import { useState } from 'react';
 import type { PasswordEntry } from '@/types';
 import { PasswordForm } from './PasswordForm';
 import { PasswordList } from './PasswordList';
+import { PasswordViewer } from './PasswordViewer';
+
+type ViewMode = 'list' | 'form' | 'view';
 
 export const PasswordManager: React.FC = () => {
-  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [editingPassword, setEditingPassword] = useState<PasswordEntry | null>(
+    null
+  );
+  const [viewingPassword, setViewingPassword] = useState<PasswordEntry | null>(
     null
   );
   const [refreshKey, setRefreshKey] = useState(0);
 
   const handleAddPassword = () => {
     setEditingPassword(null);
-    setIsFormOpen(true);
+    setViewMode('form');
   };
 
   const handleEditPassword = (password: PasswordEntry) => {
     setEditingPassword(password);
-    setIsFormOpen(true);
+    setViewMode('form');
+  };
+
+  const handleViewPassword = (password: PasswordEntry) => {
+    setViewingPassword(password);
+    setViewMode('view');
   };
 
   const handleFormClose = () => {
-    setIsFormOpen(false);
+    setViewMode('list');
     setEditingPassword(null);
+  };
+
+  const handleViewerClose = () => {
+    setViewMode('list');
+    setViewingPassword(null);
+  };
+
+  const handleViewerEdit = (password: PasswordEntry) => {
+    setEditingPassword(password);
+    setViewingPassword(null);
+    setViewMode('form');
   };
 
   const handleFormSave = () => {
     // Trigger a refresh of the password list
     setRefreshKey((prev) => prev + 1);
+    setViewMode('list');
   };
 
   return (
     <div className="space-y-6">
-      <PasswordList
-        key={refreshKey}
-        onAdd={handleAddPassword}
-        onEdit={handleEditPassword}
-      />
+      {viewMode === 'list' && (
+        <PasswordList
+          key={refreshKey}
+          onAdd={handleAddPassword}
+          onEdit={handleEditPassword}
+          onView={handleViewPassword}
+        />
+      )}
 
-      <PasswordForm
-        editingPassword={editingPassword}
-        isOpen={isFormOpen}
-        onClose={handleFormClose}
-        onSave={handleFormSave}
-      />
+      {viewMode === 'form' && (
+        <PasswordForm
+          editingPassword={editingPassword}
+          isOpen={true}
+          onClose={handleFormClose}
+          onSave={handleFormSave}
+        />
+      )}
+
+      {viewMode === 'view' && viewingPassword && (
+        <PasswordViewer
+          password={viewingPassword}
+          onClose={handleViewerClose}
+          onEdit={handleViewerEdit}
+        />
+      )}
     </div>
   );
 };

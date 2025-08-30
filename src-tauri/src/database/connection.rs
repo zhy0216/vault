@@ -46,7 +46,8 @@ impl DatabaseManager {
             .build()
             .await
             .map_err(|e| {
-                // If we can't open the database, it might be due to wrong password
+                // If we can't open the database, it might be due to wrong password or corruption
+                eprintln!("Database connection error: {:?}", e);
                 DatabaseError::Connection(e)
             })?;
 
@@ -58,38 +59,6 @@ impl DatabaseManager {
         Ok(manager)
     }
 
-    pub async fn validate_master_password(master_password: &str) -> Result<bool> {
-        let db_path = Self::get_database_path()?;
-        
-        // Check if database file exists
-        if !db_path.exists() {
-            return Ok(false);
-        }
-
-        // Try to open the database with the provided password
-        let encryption_key = Self::derive_encryption_key(master_password);
-        let encryption_config = EncryptionConfig::new(Cipher::Aes256Cbc, encryption_key.into());
-
-        match Builder::new_local(db_path.to_string_lossy().to_string())
-            .encryption_config(encryption_config)
-            .build()
-            .await
-        {
-            Ok(db) => {
-                // Try to perform a simple query to verify the password is correct
-                match db.connect() {
-                    Ok(conn) => {
-                        match conn.query("SELECT 1", ()).await {
-                            Ok(_) => Ok(true),
-                            Err(_) => Ok(false),
-                        }
-                    }
-                    Err(_) => Ok(false),
-                }
-            }
-            Err(_) => Ok(false),
-        }
-    }
 
     pub fn is_database_initialized() -> Result<bool> {
         let db_path = Self::get_database_path()?;

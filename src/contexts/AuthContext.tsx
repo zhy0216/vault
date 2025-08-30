@@ -60,6 +60,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       const isValid = await authAPI.verifyMasterPassword(password);
 
       if (isValid) {
+        // Initialize the encrypted database with the master password
+        await authAPI.initializeDatabase(password);
+        
         const sessionToken = await authAPI.createSession();
         localStorage.setItem('sessionToken', sessionToken);
 
@@ -94,6 +97,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const setupMasterPassword = async (password: string): Promise<void> => {
     await authAPI.setMasterPassword(password);
+    
+    // Initialize the encrypted database with the new master password
+    await authAPI.initializeDatabase(password);
 
     // Automatically log in after setup
     await login(password);

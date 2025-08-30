@@ -1,4 +1,4 @@
-import { Copy, Edit, Eye, EyeOff, Plus, Trash2 } from 'lucide-react';
+import { Check, Copy, Edit, Eye, EyeOff, Plus, Trash2, View } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -19,16 +19,19 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { passwordAPI } from '@/lib/tauri';
+import { copyToClipboard } from '@/lib/clipboard';
 import type { PasswordEntry } from '@/types';
 
 type PasswordListProps = {
   onEdit?: (password: PasswordEntry) => void;
   onAdd?: () => void;
+  onView?: (password: PasswordEntry) => void;
 };
 
 export const PasswordList: React.FC<PasswordListProps> = ({
   onEdit,
   onAdd,
+  onView,
 }) => {
   const [passwords, setPasswords] = useState<PasswordEntry[]>([]);
   const [filteredPasswords, setFilteredPasswords] = useState<PasswordEntry[]>(
@@ -38,6 +41,7 @@ export const PasswordList: React.FC<PasswordListProps> = ({
   const [visiblePasswords, setVisiblePasswords] = useState<Set<number>>(
     new Set()
   );
+  const [copiedItems, setCopiedItems] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -92,10 +96,37 @@ export const PasswordList: React.FC<PasswordListProps> = ({
     setVisiblePasswords(newVisible);
   };
 
-  const copyToClipboard = async (text: string, _type: string) => {
-    try {
-      await navigator.clipboard.writeText(text);
-    } catch (_err) {}
+  const handleCopy = async (text: string, type: string, itemId: string) => {
+    const success = await copyToClipboard(text, type);
+    
+    if (success) {
+      // Show green checkmark
+      setCopiedItems(prev => new Set(prev).add(itemId));
+      
+      // Reset after 2 seconds
+      setTimeout(() => {
+        setCopiedItems(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(itemId);
+          return newSet;
+        });
+      }, 2000);
+    } else {
+      // Fallback to web clipboard API if Tauri clipboard fails
+      try {
+        await navigator.clipboard.writeText(text);
+        setCopiedItems(prev => new Set(prev).add(itemId));
+        setTimeout(() => {
+          setCopiedItems(prev => {
+            const newSet = new Set(prev);
+            newSet.delete(itemId);
+            return newSet;
+          });
+        }, 2000);
+      } catch (_fallbackErr) {
+        console.error('Failed to copy to clipboard');
+      }
+    }
   };
 
   const handleDelete = async (id: number) => {
@@ -187,7 +218,11 @@ export const PasswordList: React.FC<PasswordListProps> = ({
               </TableHeader>
               <TableBody>
                 {filteredPasswords.map((password) => (
-                  <TableRow key={password.id}>
+                  <TableRow 
+                    key={password.id}
+                    className="cursor-pointer hover:bg-muted/50"
+                    onClick={() => onView?.(password)}
+                  >
                     <TableCell className="font-medium">
                       {password.website}
                     </TableCell>
@@ -196,13 +231,18 @@ export const PasswordList: React.FC<PasswordListProps> = ({
                         <span>{password.username}</span>
                         <Button
                           className="h-6 w-6 p-0"
-                          onClick={() =>
-                            copyToClipboard(password.username, 'Username')
-                          }
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCopy(password.username, 'Username', `username-${password.id}`);
+                          }}
                           size="sm"
                           variant="ghost"
                         >
-                          <Copy className="h-3 w-3" />
+                          {copiedItems.has(`username-${password.id}`) ? (
+                            <Check className="h-3 w-3 text-green-600" />
+                          ) : (
+                            <Copy className="h-3 w-3" />
+                          )}
                         </Button>
                       </div>
                     </TableCell>
@@ -215,7 +255,10 @@ export const PasswordList: React.FC<PasswordListProps> = ({
                         </span>
                         <Button
                           className="h-6 w-6 p-0"
-                          onClick={() => togglePasswordVisibility(password.id!)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            togglePasswordVisibility(password.id!);
+                          }}
                           size="sm"
                           variant="ghost"
                         >
@@ -227,13 +270,18 @@ export const PasswordList: React.FC<PasswordListProps> = ({
                         </Button>
                         <Button
                           className="h-6 w-6 p-0"
-                          onClick={() =>
-                            copyToClipboard(password.password, 'Password')
-                          }
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCopy(password.password, 'Password', `password-${password.id}`);
+                          }}
                           size="sm"
                           variant="ghost"
                         >
-                          <Copy className="h-3 w-3" />
+                          {copiedItems.has(`password-${password.id}`) ? (
+                            <Check className="h-3 w-3 text-green-600" />
+                          ) : (
+                            <Copy className="h-3 w-3" />
+                          )}
                         </Button>
                       </div>
                     </TableCell>
@@ -254,21 +302,41 @@ export const PasswordList: React.FC<PasswordListProps> = ({
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button size="sm" variant="ghost">
+                          <Button 
+                            size="sm" 
+                            variant="ghost"
+                            onClick={(e) => e.stopPropagation()}
+                          >
                             •••
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem
                             className="flex items-center gap-2"
-                            onClick={() => onEdit?.(password)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onView?.(password);
+                            }}
+                          >
+                            <View className="h-4 w-4" />
+                            View
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            className="flex items-center gap-2"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onEdit?.(password);
+                            }}
                           >
                             <Edit className="h-4 w-4" />
                             Edit
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             className="flex items-center gap-2 text-red-600"
-                            onClick={() => handleDelete(password.id!)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDelete(password.id!);
+                            }}
                           >
                             <Trash2 className="h-4 w-4" />
                             Delete

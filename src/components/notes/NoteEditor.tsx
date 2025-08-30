@@ -1,9 +1,9 @@
-import { ArrowLeft, Clock, FileText, Save, X } from 'lucide-react';
+import { ArrowLeft, Clock, FileText, Save } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -11,14 +11,12 @@ import { notesAPI } from '@/lib/tauri';
 import type { Note } from '@/types';
 
 type NoteEditorProps = {
-  isOpen: boolean;
   onClose: () => void;
   onSave: () => void;
   editingNote: Note | null;
 };
 
 export const NoteEditor: React.FC<NoteEditorProps> = ({
-  isOpen,
   onClose,
   onSave,
   editingNote,
@@ -154,47 +152,50 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
     onClose();
   };
 
-  if (!isOpen) {
-    return null;
-  }
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-      <Card className="max-h-[90vh] w-full max-w-4xl overflow-hidden">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-          <CardTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5" />
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+        <div>
+          <h2 className="font-bold text-2xl text-gray-900 dark:text-white flex items-center gap-2">
+            <FileText className="h-6 w-6" />
             {editingNote ? 'Edit Note' : 'New Note'}
-          </CardTitle>
-          <div className="flex items-center gap-2">
-            {/* Auto-save status */}
-            {editingNote && (
-              <div className="flex items-center gap-2 text-muted-foreground text-xs">
-                {isSaving ? (
-                  <>
-                    <div className="h-3 w-3 animate-spin rounded-full border-primary border-b" />
-                    Saving...
-                  </>
-                ) : lastSaved ? (
-                  <>
-                    <Clock className="h-3 w-3" />
-                    Saved {lastSaved.toLocaleTimeString()}
-                  </>
-                ) : hasUnsavedChanges ? (
-                  <>
-                    <div className="h-2 w-2 rounded-full bg-orange-500" />
-                    Unsaved changes
-                  </>
-                ) : null}
-              </div>
-            )}
-            <Button onClick={handleClose} size="sm" variant="ghost">
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-        </CardHeader>
+          </h2>
+          <p className="text-gray-600 dark:text-gray-400">
+            {editingNote ? 'Modify your secure note' : 'Create a new secure note'}
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          {/* Auto-save status */}
+          {editingNote && (
+            <div className="flex items-center gap-2 text-muted-foreground text-sm">
+              {isSaving ? (
+                <>
+                  <div className="h-4 w-4 animate-spin rounded-full border-primary border-b" />
+                  Saving...
+                </>
+              ) : lastSaved ? (
+                <>
+                  <Clock className="h-4 w-4" />
+                  Saved {lastSaved.toLocaleTimeString()}
+                </>
+              ) : hasUnsavedChanges ? (
+                <>
+                  <div className="h-3 w-3 rounded-full bg-orange-500" />
+                  Unsaved changes
+                </>
+              ) : null}
+            </div>
+          )}
+          <Button onClick={handleClose} variant="outline">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Notes
+          </Button>
+        </div>
+      </div>
 
-        <CardContent className="max-h-[calc(90vh-120px)] space-y-4 overflow-y-auto">
+      <Card>
+        <CardContent className="space-y-6 p-6">
           {error && (
             <Alert variant="destructive">
               <AlertDescription>{error}</AlertDescription>
@@ -212,10 +213,10 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
             />
           </div>
 
-          <div className="flex-1 space-y-2">
+          <div className="space-y-2">
             <Label htmlFor="note-content">Content</Label>
             <Textarea
-              className="min-h-[400px] resize-none font-mono text-sm"
+              className="min-h-[500px] resize-y font-mono text-sm"
               id="note-content"
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
                 setContent(e.target.value)
@@ -226,7 +227,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
           </div>
 
           <div className="flex items-center justify-between border-t pt-4">
-            <div className="text-muted-foreground text-xs">
+            <div className="text-muted-foreground text-sm">
               {content.length} characters
             </div>
             <div className="flex gap-2">
