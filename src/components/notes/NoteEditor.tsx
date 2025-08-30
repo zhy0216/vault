@@ -86,7 +86,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
         window.clearTimeout(autoSaveTimeoutRef.current);
       }
     };
-  }, [title, content, editingNote, handleAutoSave]);
+  }, [title, content, editingNote]);
 
   const handleAutoSave = async () => {
     if (!(editingNote?.id && title.trim())) {

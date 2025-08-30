@@ -22,7 +22,7 @@ tauri = { version = "2", features = [] }
 tauri-plugin-opener = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-libsql = "0.3"
+libsql = { version = "0.3", features = ["encryption"] }
 tokio = { version = "1", features = ["full"] }
 argon2 = "0.5"
 chacha20poly1305 = "0.10"
@@ -32,4 +32,6 @@ thiserror = "1.0"
 uuid = { version = "1.0", features = ["v4"] }
 dirs = "6.0.0"
 hex = "0.4.3"
+base64 = "0.21"
+sha2 = "0.10"
 

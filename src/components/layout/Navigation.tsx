@@ -1,10 +1,10 @@
-import { FileText, Home, Key, LogOut, Moon, Settings, Sun } from 'lucide-react';
+import { FileText, Key, LogOut, Moon, Settings, Sun } from 'lucide-react';
 import type React from 'react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { cn } from '@/lib/utils';
 
-type ViewType = 'home' | 'passwords' | 'notes' | 'settings';
+type ViewType = 'passwords' | 'notes' | 'settings';
 
 type NavigationProps = {
   currentView: ViewType;
@@ -22,12 +22,6 @@ export const Navigation: React.FC<NavigationProps> = ({
   const { logout } = useAuth();
 
   const navigationItems = [
-    {
-      id: 'home' as ViewType,
-      label: 'Home',
-      icon: Home,
-      description: 'Dashboard overview',
-    },
     {
       id: 'passwords' as ViewType,
       label: 'Passwords',

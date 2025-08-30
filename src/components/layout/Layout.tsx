@@ -2,7 +2,7 @@ import type React from 'react';
 import { useEffect, useState } from 'react';
 import { Navigation } from './Navigation';
 
-type ViewType = 'home' | 'passwords' | 'notes' | 'settings';
+type ViewType = 'passwords' | 'notes' | 'settings';
 
 type LayoutProps = {
   children: React.ReactNode;

@@ -62,7 +62,7 @@ export const PasswordForm: React.FC<PasswordFormProps> = ({
     } else {
       setPasswordStrength({ score: 0, feedback: [] });
     }
-  }, [formData.password, calculatePasswordStrength]);
+  }, [formData.password,]);
 
   const calculatePasswordStrength = (password: string) => {
     let score = 0;

@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-type ViewType = 'home' | 'passwords' | 'notes' | 'settings';
+type ViewType = 'passwords' | 'notes' | 'settings';
 
 type KeyboardShortcutsProps = {
   onNavigate: (view: ViewType) => void;
@@ -32,17 +32,13 @@ export const useKeyboardShortcuts = ({
         switch (event.key) {
           case '1':
             event.preventDefault();
-            onNavigate('home');
+            onNavigate('passwords');
             break;
           case '2':
             event.preventDefault();
-            onNavigate('passwords');
-            break;
-          case '3':
-            event.preventDefault();
             onNavigate('notes');
             break;
-          case '4':
+          case '3':
             event.preventDefault();
             onNavigate('settings');
             break;
@@ -53,10 +49,10 @@ export const useKeyboardShortcuts = ({
         }
       }
 
-      // Handle escape key to go back to home
-      if (event.key === 'Escape' && currentView !== 'home') {
+      // Handle escape key to go back to passwords
+      if (event.key === 'Escape' && currentView !== 'passwords') {
         event.preventDefault();
-        onNavigate('home');
+        onNavigate('passwords');
       }
     };
 

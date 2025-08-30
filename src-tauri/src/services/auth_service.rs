@@ -1,12 +1,6 @@
-use argon2::{
-    password_hash::{rand_core::OsRng, PasswordHash, PasswordHasher, PasswordVerifier, SaltString},
-    Argon2,
-};
 use ring::rand::{SecureRandom, SystemRandom};
 use std::collections::HashMap;
 use std::time::{SystemTime, UNIX_EPOCH};
-use uuid::Uuid;
-use zeroize::Zeroize;
 
 use crate::database::{DatabaseError, DatabaseManager, Result};
 
@@ -40,30 +34,18 @@ impl AuthService {
         }
     }
 
-    pub async fn set_master_password(&self, db_manager: &DatabaseManager, password: &str) -> Result<()> {
+    pub async fn set_master_password(&self, password: &str) -> Result<()> {
         // Validate password strength
         self.validate_password_strength(password)?;
 
-        // Hash the password
-        let salt = SaltString::generate(&mut OsRng);
-        let argon2 = Argon2::default();
-        let password_hash = argon2
-            .hash_password(password.as_bytes(), &salt)
-            .map_err(|e| DatabaseError::Migration(format!("Failed to hash password: {}", e)))?;
-
-        // Store the hash in the database
-        let conn = db_manager.get_connection().await?;
-        conn.execute(
-            "INSERT OR REPLACE INTO config (key, value) VALUES (?, ?)",
-            ("master_password_hash", password_hash.to_string().as_str()),
-        )
-        .await
-        .map_err(|e| DatabaseError::Query(format!("Failed to store master password: {}", e)))?;
+        // Create a new encrypted database with this password
+        // This will fail if the database already exists and can't be opened with this password
+        let _db_manager = DatabaseManager::new_with_encryption(password).await?;
 
         Ok(())
     }
 
-    pub async fn verify_master_password(&mut self, db_manager: &DatabaseManager, password: &str) -> Result<bool> {
+    pub async fn verify_master_password(&mut self, password: &str) -> Result<bool> {
         let client_id = "default"; // In a real app, this would be based on client identification
         
         // Check if account is locked
@@ -71,55 +53,23 @@ impl AuthService {
             return Err(DatabaseError::Migration("Account temporarily locked due to too many failed attempts".to_string()));
         }
 
-        // Get stored password hash
-        let conn = db_manager.get_connection().await?;
-        let mut rows = conn
-            .query(
-                "SELECT value FROM config WHERE key = ?",
-                ["master_password_hash"],
-            )
-            .await
-            .map_err(|e| DatabaseError::Query(format!("Failed to get master password hash: {}", e)))?;
+        // Try to validate the master password by attempting to open the encrypted database
+        let is_valid = DatabaseManager::validate_master_password(password).await?;
 
-        if let Some(row) = rows.next().await.map_err(|e| DatabaseError::Query(format!("Failed to read config row: {}", e)))? {
-            let stored_hash = row.get::<String>(0)?;
-            let parsed_hash = PasswordHash::new(&stored_hash)
-                .map_err(|e| DatabaseError::Migration(format!("Invalid password hash format: {}", e)))?;
-
-            let argon2 = Argon2::default();
-            let is_valid = argon2.verify_password(password.as_bytes(), &parsed_hash).is_ok();
-
-            if is_valid {
-                // Reset login attempts on successful login
-                self.login_attempts.remove(client_id);
-                Ok(true)
-            } else {
-                // Record failed attempt
-                self.record_failed_attempt(client_id);
-                Ok(false)
-            }
+        if is_valid {
+            // Reset login attempts on successful login
+            self.login_attempts.remove(client_id);
+            Ok(true)
         } else {
-            // No master password set yet
+            // Record failed attempt
+            self.record_failed_attempt(client_id);
             Ok(false)
         }
     }
 
-    pub async fn is_master_password_set(&self, db_manager: &DatabaseManager) -> Result<bool> {
-        let conn = db_manager.get_connection().await?;
-        let mut rows = conn
-            .query(
-                "SELECT COUNT(*) FROM config WHERE key = ?",
-                ["master_password_hash"],
-            )
-            .await
-            .map_err(|e| DatabaseError::Query(format!("Failed to check master password: {}", e)))?;
-
-        if let Some(row) = rows.next().await.map_err(|e| DatabaseError::Query(format!("Failed to read config row: {}", e)))? {
-            let count: i64 = row.get(0)?;
-            Ok(count > 0)
-        } else {
-            Ok(false)
-        }
+    pub async fn is_master_password_set(&self) -> Result<bool> {
+        // Check if the encrypted database file exists
+        DatabaseManager::is_database_initialized()
     }
 
     pub fn create_session(&mut self) -> Result<String> {

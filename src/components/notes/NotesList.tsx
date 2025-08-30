@@ -28,7 +28,7 @@ export const NotesList: React.FC<NotesListProps> = ({ onEdit, onAdd }) => {
 
   useEffect(() => {
     loadNotes();
-  }, [loadNotes]);
+  }, []);
 
   useEffect(() => {
     if (searchQuery.trim() === '') {

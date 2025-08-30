@@ -43,7 +43,7 @@ export const PasswordList: React.FC<PasswordListProps> = ({
 
   useEffect(() => {
     loadPasswords();
-  }, [loadPasswords]);
+  }, []);
 
   useEffect(() => {
     if (searchQuery.trim()) {
@@ -51,7 +51,7 @@ export const PasswordList: React.FC<PasswordListProps> = ({
     } else {
       setFilteredPasswords(passwords);
     }
-  }, [searchQuery, passwords, searchPasswords]);
+  }, [searchQuery, passwords]);
 
   const loadPasswords = async () => {
     try {
