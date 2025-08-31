@@ -15,6 +15,13 @@ A **offline** password manager built with Tauri, React, and TypeScript. Your pas
 - **Modern UI** with shadcn/ui components
 
 
+## Download
+
+[Download](https://github.com/zhy0216/vault/releases)
+
+for macos: 
+`xattr -d com.apple.quarantine /Applications/vault.app`
+
 ## Getting Started
 
 ### Prerequisites
