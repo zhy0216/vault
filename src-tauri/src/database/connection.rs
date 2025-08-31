@@ -37,9 +37,8 @@ impl DatabaseManager {
             std::fs::create_dir_all(parent)?;
         }
 
-        // Create encryption key from master password
-        let encryption_key = Self::derive_encryption_key(master_password);
-        let encryption_config = EncryptionConfig::new(Cipher::Aes256Cbc, encryption_key.into());
+        // SQLCipher handles key derivation internally from the password
+        let encryption_config = EncryptionConfig::new(Cipher::Aes256Cbc, master_password.as_bytes().to_vec().into());
 
         let db = Builder::new_local(db_path.to_string_lossy().to_string())
             .encryption_config(encryption_config)
@@ -102,18 +101,6 @@ impl DatabaseManager {
         drop(self);
     }
 
-    fn derive_encryption_key(master_password: &str) -> Vec<u8> {
-        use sha2::{Sha256, Digest};
-        
-        // Create a deterministic key from the master password
-        let mut hasher = Sha256::new();
-        hasher.update(master_password.as_bytes());
-        hasher.update(b"vault-encryption-key-salt"); // Add a salt for security
-        let hash = hasher.finalize();
-        
-        // Return the raw bytes for libsql
-        hash.to_vec()
-    }
 
     async fn run_migrations(&self) -> Result<()> {
         let conn = self.get_connection().await?;
