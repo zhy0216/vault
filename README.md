@@ -1,11 +1,11 @@
 # Vault Password Manager
-(under development)
 
 A **offline** password manager built with Tauri, React, and TypeScript. Your passwords and notes are encrypted and stored locally on your device - completely offline, never in the cloud.
 
 ## Features
 
-- **Military-grade encryption** with offline, local-only data storage
+- **Strong encryption** with offline, local-only data storage
+- **Portable encrypted database files** - carry your vault files anywhere, protected by your master password and libSQL encryption
 - **Password management** with secure generation and storage
 - **Notes management** for secure text storage
 - **Session persistence** with automatic logout
@@ -60,8 +60,11 @@ npm run tauri build
 
 ## Security
 
-- All data is encrypted and stored locally
-- Master password is hashed using PBKDF2/Argon2
-- No data is ever transmitted to external servers
-- Session management with automatic timeout
+Vault Password Manager implements **strong encryption** by leveraging libSQL's proven encryption-at-rest capabilities, ensuring your sensitive data remains secure even if your device is compromised.
+
+The application relies entirely on **libSQL's encryption-at-rest** feature, which provides:
+
+- **Page-based encryption**: Database files are encrypted at the page level, allowing efficient data access without decrypting the entire file
+- **SQLCipher integration**: Uses [SQLCipher](https://www.zetetic.net/sqlcipher/design/) as the default encryption standard
+- **AES-256-CBC encryption**: Industry-standard encryption algorithm with 256-bit keys
 
