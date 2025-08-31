@@ -1,52 +1,21 @@
 import { Check, Shield, Trash2 } from 'lucide-react';
 import type React from 'react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-
-interface SettingsData {
-  // Security Settings
-  autoLockTimeout: number; // minutes
-  
-  // UI Settings
-  theme: 'light' | 'dark' | 'system';
-  
-  // Privacy Settings
-  clearClipboardTimeout: number; // seconds
-}
-
-const defaultSettings: SettingsData = {
-  autoLockTimeout: 5,
-  theme: 'system',
-  clearClipboardTimeout: 30,
-};
+import { useSettings } from '@/contexts/SettingsContext';
 
 export const SettingsPage: React.FC = () => {
-  const [settings, setSettings] = useState<SettingsData>(defaultSettings);
-  const [hasChanges, setHasChanges] = useState(false);
+  const { settings, updateSetting, saveSettings, resetSettings, hasChanges } = useSettings();
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
 
-  // Load settings from localStorage on component mount
-  useEffect(() => {
-    const savedSettings = localStorage.getItem('vault-settings');
-    if (savedSettings) {
-      try {
-        const parsedSettings = JSON.parse(savedSettings);
-        setSettings({ ...defaultSettings, ...parsedSettings });
-      } catch (error) {
-        console.error('Failed to parse saved settings:', error);
-      }
-    }
-  }, []);
-
-  // Save settings to localStorage
-  const saveSettings = () => {
+  // Handle save with status updates
+  const handleSave = async () => {
     setSaveStatus('saving');
     try {
-      localStorage.setItem('vault-settings', JSON.stringify(settings));
-      setHasChanges(false);
+      saveSettings();
       setSaveStatus('saved');
       setTimeout(() => setSaveStatus('idle'), 2000);
     } catch (error) {
@@ -55,20 +24,9 @@ export const SettingsPage: React.FC = () => {
     }
   };
 
-  // Update a setting and mark as changed
-  const updateSetting = <K extends keyof SettingsData>(
-    key: K,
-    value: SettingsData[K]
-  ) => {
-    setSettings(prev => ({ ...prev, [key]: value }));
-    setHasChanges(true);
-    setSaveStatus('idle');
-  };
-
-  // Reset settings to defaults
-  const resetSettings = () => {
-    setSettings(defaultSettings);
-    setHasChanges(true);
+  // Handle reset with status updates
+  const handleReset = () => {
+    resetSettings();
     setSaveStatus('idle');
   };
 
@@ -84,7 +42,7 @@ export const SettingsPage: React.FC = () => {
         </div>
         
         {hasChanges && (
-          <Button onClick={saveSettings} disabled={saveStatus === 'saving'}>
+          <Button onClick={handleSave} disabled={saveStatus === 'saving'}>
             {saveStatus === 'saving' ? (
               <div className="mr-2 h-4 w-4 animate-spin rounded-full border-white border-b-2" />
             ) : saveStatus === 'saved' ? (
@@ -137,7 +95,7 @@ export const SettingsPage: React.FC = () => {
       </Card>
 
       {/* UI Settings */}
-      <Card>
+      {/* <Card>
         <CardHeader>
           <CardTitle>User Interface</CardTitle>
           <CardDescription>
@@ -160,7 +118,7 @@ export const SettingsPage: React.FC = () => {
           </div>
 
         </CardContent>
-      </Card>
+      </Card> */}
 
 
       {/* Reset Settings */}
@@ -173,7 +131,7 @@ export const SettingsPage: React.FC = () => {
         </CardHeader>
         <CardContent>
           <Button
-            onClick={resetSettings}
+            onClick={handleReset}
             variant="destructive"
             className="w-full sm:w-auto"
           >

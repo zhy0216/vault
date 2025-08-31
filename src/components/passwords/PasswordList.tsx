@@ -19,7 +19,8 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { passwordAPI } from '@/lib/tauri';
-import { copyToClipboard } from '@/lib/clipboard';
+import { copyToClipboardWithClear } from '@/lib/clipboard';
+import { useSettings } from '@/contexts/SettingsContext';
 import type { PasswordEntry } from '@/types';
 
 type PasswordListProps = {
@@ -33,17 +34,14 @@ export const PasswordList: React.FC<PasswordListProps> = ({
   onAdd,
   onView,
 }) => {
+  const { settings } = useSettings();
   const [passwords, setPasswords] = useState<PasswordEntry[]>([]);
-  const [filteredPasswords, setFilteredPasswords] = useState<PasswordEntry[]>(
-    []
-  );
+  const [filteredPasswords, setFilteredPasswords] = useState<PasswordEntry[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [visiblePasswords, setVisiblePasswords] = useState<Set<number>>(
-    new Set()
-  );
-  const [copiedItems, setCopiedItems] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [visiblePasswords, setVisiblePasswords] = useState<Set<number>>(new Set());
+  const [copiedItems, setCopiedItems] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     loadPasswords();
@@ -97,7 +95,7 @@ export const PasswordList: React.FC<PasswordListProps> = ({
   };
 
   const handleCopy = async (text: string, type: string, itemId: string) => {
-    const success = await copyToClipboard(text, type);
+    const success = await copyToClipboardWithClear(text, settings.clearClipboardTimeout, type);
     
     if (success) {
       // Show green checkmark

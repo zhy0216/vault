@@ -4,7 +4,8 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
-import { copyToClipboard } from '@/lib/clipboard';
+import { copyToClipboardWithClear } from '@/lib/clipboard';
+import { useSettings } from '@/contexts/SettingsContext';
 import type { PasswordEntry } from '@/types';
 
 type PasswordViewerProps = {
@@ -18,11 +19,12 @@ export const PasswordViewer: React.FC<PasswordViewerProps> = ({
   onClose,
   onEdit,
 }) => {
+  const { settings } = useSettings();
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [copiedItems, setCopiedItems] = useState<Set<string>>(new Set());
 
   const handleCopy = async (text: string, type: string, itemId: string) => {
-    const success = await copyToClipboard(text, type);
+    const success = await copyToClipboardWithClear(text, settings.clearClipboardTimeout, type);
     
     if (success) {
       // Show green checkmark
