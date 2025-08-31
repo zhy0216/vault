@@ -94,12 +94,36 @@ pub async fn validate_session(
 }
 
 #[tauri::command]
+pub async fn disconnect_database(
+    db_state: State<'_, AppState>
+) -> Result<(), String> {
+    let mut db_state_guard = db_state.lock().await;
+    
+    // Take the database manager out of the state and disconnect it
+    if let Some(db_manager) = db_state_guard.take() {
+        db_manager.disconnect();
+    }
+    
+    Ok(())
+}
+
+#[tauri::command]
 pub async fn lock_session(
     token: String,
-    auth_state: State<'_, AuthState>
+    auth_state: State<'_, AuthState>,
+    db_state: State<'_, AppState>
 ) -> Result<(), String> {
     let mut auth_service = auth_state.lock().await;
     
+    // Lock the session first
     auth_service.lock_session(&token)
-        .map_err(|e| e.to_string())
+        .map_err(|e| e.to_string())?;
+    
+    // Then disconnect the database
+    let mut db_state_guard = db_state.lock().await;
+    if let Some(db_manager) = db_state_guard.take() {
+        db_manager.disconnect();
+    }
+    
+    Ok(())
 }

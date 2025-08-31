@@ -49,7 +49,8 @@ pub fn run() {
             commands::is_vault_file_valid,
             commands::create_session,
             commands::validate_session,
-            commands::lock_session
+            commands::lock_session,
+            commands::disconnect_database
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

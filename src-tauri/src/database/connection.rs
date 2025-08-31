@@ -94,6 +94,13 @@ impl DatabaseManager {
         self.db.connect().map_err(DatabaseError::Connection)
     }
 
+    /// Disconnect and cleanup the database connection
+    /// This method consumes self to ensure the database is properly cleaned up
+    pub fn disconnect(self) {
+        // The database connection will be automatically dropped when self is consumed
+        // libsql handles the cleanup internally when the Database struct is dropped
+        drop(self);
+    }
 
     fn derive_encryption_key(master_password: &str) -> Vec<u8> {
         use sha2::{Sha256, Digest};
