@@ -15,11 +15,12 @@ import { notesAPI } from '@/lib/tauri';
 import type { Note } from '@/types';
 
 type NotesListProps = {
+  onView: (note: Note) => void;
   onEdit: (note: Note) => void;
   onAdd: () => void;
 };
 
-export const NotesList: React.FC<NotesListProps> = ({ onEdit, onAdd }) => {
+export const NotesList: React.FC<NotesListProps> = ({ onView, onEdit, onAdd }) => {
   const [notes, setNotes] = useState<Note[]>([]);
   const [filteredNotes, setFilteredNotes] = useState<Note[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -162,7 +163,7 @@ export const NotesList: React.FC<NotesListProps> = ({ onEdit, onAdd }) => {
             <Card 
               className="cursor-pointer transition-all hover:shadow-lg hover:scale-[1.02]" 
               key={note.id}
-              onClick={() => onEdit(note)}
+              onClick={() => onView(note)}
             >
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">

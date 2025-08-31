@@ -44,7 +44,8 @@ export const NotesManager: React.FC = () => {
         <NotesList
           key={refreshKey}
           onAdd={handleAddNote}
-          onEdit={handleViewNote}
+          onView={handleViewNote}
+          onEdit={handleEditNote}
         />
       ) : viewMode === 'viewer' ? (
         <NoteViewer

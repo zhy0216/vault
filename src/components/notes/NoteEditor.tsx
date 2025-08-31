@@ -216,7 +216,7 @@ export const NoteEditor: React.FC<NoteEditorProps> = ({
           <div className="space-y-2">
             <Label htmlFor="note-content">Content</Label>
             <Textarea
-              className="min-h-[500px] resize-y font-mono text-sm"
+              className="min-h-[400px] resize-y font-mono text-sm"
               id="note-content"
               onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
                 setContent(e.target.value)
