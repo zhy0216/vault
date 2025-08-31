@@ -29,8 +29,8 @@ impl DatabaseManager {
         return Err(DatabaseError::MasterPasswordNotSet);
     }
 
-    pub async fn new_with_encryption(master_password: &str) -> Result<Self> {
-        let db_path = Self::get_database_path()?;
+    pub async fn new_with_encryption_and_path(master_password: &str, vault_path: &str) -> Result<Self> {
+        let db_path = PathBuf::from(vault_path);
         
         // Ensure the directory exists
         if let Some(parent) = db_path.parent() {
@@ -60,24 +60,40 @@ impl DatabaseManager {
     }
 
 
-    pub fn is_database_initialized() -> Result<bool> {
-        let db_path = Self::get_database_path()?;
-        Ok(db_path.exists())
+
+    pub fn is_vault_file_valid(vault_path: &str) -> bool {
+        PathBuf::from(vault_path).exists()
+    }
+
+    pub fn get_vault_directory() -> Result<PathBuf> {
+        let mut path = dirs::data_dir()
+            .ok_or_else(|| DatabaseError::Migration("Could not find data directory".to_string()))?;
+        
+        path.push("vault");
+        
+        // Ensure the directory exists
+        if !path.exists() {
+            std::fs::create_dir_all(&path)?;
+        }
+        
+        Ok(path)
+    }
+
+    pub fn create_vault_with_timestamp() -> Result<PathBuf> {
+        let vault_dir = Self::get_vault_directory()?;
+        let timestamp = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_secs();
+        
+        let vault_name = format!("vault_{}.db", timestamp);
+        Ok(vault_dir.join(vault_name))
     }
 
     pub async fn get_connection(&self) -> Result<Connection> {
         self.db.connect().map_err(DatabaseError::Connection)
     }
 
-    fn get_database_path() -> Result<PathBuf> {
-        let mut path = dirs::data_dir()
-            .ok_or_else(|| DatabaseError::Migration("Could not find data directory".to_string()))?;
-        
-        path.push("vault");
-        path.push("vault.db");
-        
-        Ok(path)
-    }
 
     fn derive_encryption_key(master_password: &str) -> Vec<u8> {
         use sha2::{Sha256, Digest};

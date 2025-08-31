@@ -70,24 +70,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  const login = async (password: string): Promise<boolean> => {
+  const login = async (_password: string): Promise<boolean> => {
+    // This method is now handled by the vault selection system
+    // Authentication happens when a vault is successfully opened
     try {
-      const isValid = await authAPI.verifyMasterPassword(password);
+      const sessionToken = await authAPI.createSession();
+      localStorage.setItem('sessionToken', sessionToken);
 
-      if (isValid) {
-        // Initialize the encrypted database with the master password
-        await authAPI.initializeDatabase(password);
-        
-        const sessionToken = await authAPI.createSession();
-        localStorage.setItem('sessionToken', sessionToken);
-
-        setAuthState({
-          isAuthenticated: true,
-          sessionToken,
-        });
-        return true;
-      }
-      return false;
+      setAuthState({
+        isAuthenticated: true,
+        sessionToken,
+      });
+      return true;
     } catch (_error) {
       return false;
     }
@@ -117,14 +111,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     isAuthenticated: authState.isAuthenticated,
   });
 
-  const setupMasterPassword = async (password: string): Promise<void> => {
-    await authAPI.setMasterPassword(password);
-    
-    // Initialize the encrypted database with the new master password
-    await authAPI.initializeDatabase(password);
-
-    // Automatically log in after setup
-    await login(password);
+  const setupMasterPassword = async (_password: string): Promise<void> => {
+    // Master password setup is now handled per-vault in VaultSelector
+    // This method is deprecated but kept for interface compatibility
+    throw new Error('Master password setup is now handled through vault creation');
   };
 
   useEffect(() => {

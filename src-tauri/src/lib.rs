@@ -23,6 +23,7 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_clipboard_manager::init())
+        .plugin(tauri_plugin_dialog::init())
         .setup(|app| {
             let auth_service = AuthService::new();
             
@@ -42,10 +43,10 @@ pub fn run() {
             commands::create_note,
             commands::update_note,
             commands::delete_note,
-            commands::verify_master_password,
-            commands::set_master_password,
-            commands::is_master_password_set,
-            commands::initialize_database,
+            commands::initialize_database_with_path,
+            commands::create_new_vault,
+            commands::get_vault_directory,
+            commands::is_vault_file_valid,
             commands::create_session,
             commands::validate_session,
             commands::lock_session

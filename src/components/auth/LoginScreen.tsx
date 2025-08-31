@@ -1,4 +1,4 @@
-import { Eye, EyeOff, Lock } from 'lucide-react';
+import { Eye, EyeOff, Lock, FolderOpen } from 'lucide-react';
 import type React from 'react';
 import { memo, useState } from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -13,13 +13,21 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/contexts/AuthContext';
+import { authAPI } from '@/lib/tauri';
 
-export const LoginScreen: React.FC = memo(() => {
+interface LoginScreenProps {
+  vaultPath?: string;
+  onChangeVault?: () => void;
+}
+
+export const LoginScreen: React.FC<LoginScreenProps> = memo(({ vaultPath, onChangeVault }) => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { login } = useAuth();
+
+  console.log("######### LoginScreen vaultPath:", vaultPath);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,10 +45,18 @@ export const LoginScreen: React.FC = memo(() => {
     setError(''); // Clear any previous errors
 
     try {
-      const success = await login(password);
-      if (!success) {
-        setError('Invalid master password. Please try again.');
-        setPassword('');
+      if (vaultPath) {
+        // Initialize the database with the stored vault path
+        await authAPI.initializeDatabaseWithPath(password, vaultPath);
+        // Create session after successful vault initialization
+        const success = await login(password);
+        if (!success) {
+          setError('Invalid master password. Please try again.');
+          setPassword('');
+        }
+      } else {
+        // No vault path - should redirect to vault selection
+        setError('No vault selected. Please select a vault first.');
       }
     } catch (error) {
       // Extract the actual error message from the backend
@@ -65,6 +81,11 @@ export const LoginScreen: React.FC = memo(() => {
           <CardDescription>
             Enter your master password to unlock your vault
           </CardDescription>
+          {vaultPath && (
+            <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+              Vault: {vaultPath.split('/').pop()}
+            </div>
+          )}
         </CardHeader>
         <CardContent>
           <form className="space-y-4" onSubmit={handleSubmit}>
@@ -108,6 +129,19 @@ export const LoginScreen: React.FC = memo(() => {
             <Button className="w-full" disabled={isSubmitting} type="submit">
               {isSubmitting ? 'Unlocking...' : 'Unlock Vault'}
             </Button>
+            
+            {onChangeVault && (
+              <Button 
+                variant="outline" 
+                className="w-full mt-2" 
+                onClick={onChangeVault}
+                disabled={isSubmitting}
+                type="button"
+              >
+                <FolderOpen className="h-4 w-4 mr-2" />
+                Change Vault
+              </Button>
+            )}
           </form>
         </CardContent>
       </Card>

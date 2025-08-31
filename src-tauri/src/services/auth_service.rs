@@ -2,7 +2,7 @@ use ring::rand::{SecureRandom, SystemRandom};
 use std::collections::HashMap;
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use crate::database::{DatabaseError, DatabaseManager, Result};
+use crate::database::{DatabaseError, Result};
 
 const SESSION_TIMEOUT_MINUTES: u64 = 15;
 const MAX_LOGIN_ATTEMPTS: u32 = 5;
@@ -34,49 +34,14 @@ impl AuthService {
         }
     }
 
-    pub async fn set_master_password(&self, password: &str) -> Result<()> {
-        // Validate password strength
-        self.validate_password_strength(password)?;
+    // This method is no longer needed with vault selection system
+    // Individual vaults are created through the vault selector
 
-        // Create a new encrypted database with this password
-        // This will fail if the database already exists and can't be opened with this password
-        let _db_manager = DatabaseManager::new_with_encryption(password).await?;
+    // Password verification is now handled per-vault in the vault selector
+    // This method is no longer needed
 
-        Ok(())
-    }
-
-    pub async fn verify_master_password(&mut self, password: &str) -> Result<bool> {
-        let client_id = "default"; // In a real app, this would be based on client identification
-        
-        // Check if account is locked
-        if self.is_account_locked(client_id) {
-            return Err(DatabaseError::Migration("Account temporarily locked due to too many failed attempts".to_string()));
-        }
-
-        // Try to validate the master password by attempting to create a database manager
-        // This is more reliable than just opening the database
-        match DatabaseManager::new_with_encryption(password).await {
-            Ok(_) => {
-                // Reset login attempts on successful login
-                self.login_attempts.remove(client_id);
-                Ok(true)
-            }
-            Err(DatabaseError::Connection(_)) => {
-                // This likely means wrong password
-                self.record_failed_attempt(client_id);
-                Ok(false)
-            }
-            Err(e) => {
-                // Other errors should be propagated
-                Err(e)
-            }
-        }
-    }
-
-    pub async fn is_master_password_set(&self) -> Result<bool> {
-        // Check if the encrypted database file exists
-        DatabaseManager::is_database_initialized()
-    }
+    // With vault selection system, there's no single "master password"
+    // Each vault has its own password
 
     pub fn create_session(&mut self) -> Result<String> {
         let session_token = self.generate_session_token()?;

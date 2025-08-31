@@ -3,17 +3,7 @@ import type { Note, PasswordEntry } from '@/types';
 
 // Authentication commands
 export const authAPI = {
-  async isMasterPasswordSet(): Promise<boolean> {
-    return await invoke('is_master_password_set');
-  },
-
-  async setMasterPassword(password: string): Promise<void> {
-    return await invoke('set_master_password', { password });
-  },
-
-  async verifyMasterPassword(password: string): Promise<boolean> {
-    return await invoke('verify_master_password', { password });
-  },
+  // Deprecated - vault selection system handles authentication per vault
 
   async createSession(): Promise<string> {
     return await invoke('create_session');
@@ -27,8 +17,22 @@ export const authAPI = {
     return await invoke('lock_session', { token });
   },
 
-  async initializeDatabase(password: string): Promise<void> {
-    return await invoke('initialize_database', { password });
+  // Deprecated - use initializeDatabaseWithPath instead
+
+  async initializeDatabaseWithPath(password: string, vaultPath: string): Promise<void> {
+    return await invoke('initialize_database_with_path', { password, vaultPath });
+  },
+
+  async createNewVault(password: string): Promise<string> {
+    return await invoke('create_new_vault', { password });
+  },
+
+  async getVaultDirectory(): Promise<string> {
+    return await invoke('get_vault_directory');
+  },
+
+  async isVaultFileValid(vaultPath: string): Promise<boolean> {
+    return await invoke('is_vault_file_valid', { vaultPath });
   },
 };
 
